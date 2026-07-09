@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pumpkin Arter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,650;1,9..144,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c1108;
+    --panel:#2b1a0c;
+    --panel-2:#33200f;
+    --line:#4d2f16;
+    --paper:#fdecd3;
+    --paper-dim:#dcb589;
+    --banana:#ff7a1a;
+    --banana-deep:#e2600a;
+    --peel:#4f7942;
+    --danger:#e2694b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    padding:48px 24px 64px;
+    background-image:
+      radial-gradient(circle at 18% 12%, rgba(255,122,26,0.10), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(79,121,66,0.10), transparent 45%);
+  }
+  .wrap{ max-width:920px; margin:0 auto; opacity:0; pointer-events:none; transition:opacity .6s ease; }
+  .wrap.revealed{ opacity:1; pointer-events:auto; }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--banana);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:7px; height:7px; border-radius:50%;
+    background:var(--banana);
+    box-shadow:0 0 0 3px rgba(243,199,67,0.18);
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:650;
+    font-size:clamp(34px, 5.5vw, 54px);
+    line-height:0.98;
+    margin:0 0 10px;
+    letter-spacing:-0.01em;
+  }
+  h1 em{
+    font-style:italic;
+    font-weight:500;
+    color:var(--banana);
+  }
+  .sub{
+    color:var(--paper-dim);
+    font-size:15px;
+    max-width:52ch;
+    line-height:1.55;
+    margin:0 0 36px;
+  }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:28px;
+    margin-bottom:20px;
+  }
+  .field{ margin-bottom:20px; }
+  .field:last-child{ margin-bottom:0; }
+  label{
+    display:block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    margin-bottom:8px;
+  }
+  .hint{
+    font-size:12px;
+    color:var(--paper-dim);
+    margin-top:6px;
+    line-height:1.5;
+  }
+  .hint a{ color:var(--banana); }
+
+  input[type="password"], input[type="text"], textarea, select{
+    width:100%;
+    background:var(--ink);
+    border:1px solid var(--line);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    padding:12px 14px;
+    border-radius:3px;
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  input[type="password"]:focus, input[type="text"]:focus, textarea:focus, select:focus{
+    border-color:var(--banana);
+  }
+  textarea{ resize:vertical; min-height:92px; line-height:1.5; }
+
+  .row{ display:flex; gap:14px; flex-wrap:wrap; }
+  .row > div{ flex:1; min-width:160px; }
+
+  .count-badge{
+    float:right;
+    text-transform:none;
+    letter-spacing:0;
+    font-family:'Inter', sans-serif;
+    font-size:11px;
+    color:var(--banana);
+  }
+
+  .dropzone{
+    border:1px dashed var(--line);
+    border-radius:3px;
+    padding:22px 16px;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    font-size:13px;
+    color:var(--paper-dim);
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .dropzone.drag-over{
+    border-color:var(--banana);
+    background:rgba(243,199,67,0.06);
+  }
+  .peel-small{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    color:var(--peel);
+    font-size:18px;
+  }
+  .dz-hint{
+    font-size:11px;
+    opacity:0.75;
+  }
+  .link-btn{
+    appearance:none;
+    background:none;
+    border:none;
+    padding:0;
+    color:var(--banana);
+    font-size:13px;
+    font-family:inherit;
+    text-decoration:underline;
+    cursor:pointer;
+  }
+
+  .ref-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(84px, 1fr));
+    gap:10px;
+    margin-top:12px;
+  }
+  .ref-thumb{
+    position:relative;
+    aspect-ratio:1;
+    border-radius:3px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    background:var(--ink);
+  }
+  .ref-thumb img{
+    width:100%; height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .ref-thumb .idx{
+    position:absolute;
+    top:4px; left:4px;
+    background:var(--banana);
+    color:var(--ink);
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    font-weight:600;
+    line-height:1;
+    padding:3px 5px;
+    border-radius:2px;
+  }
+  .ref-thumb .remove{
+    position:absolute;
+    top:4px; right:4px;
+    width:18px; height:18px;
+    border-radius:50%;
+    background:rgba(21,19,17,0.75);
+    color:var(--paper);
+    border:none;
+    font-size:12px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .ref-thumb .remove:hover{ background:var(--danger); color:var(--ink); }
+
+  .shutter{
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    width:100%;
+    padding:15px 20px;
+    border-radius:3px;
+    background:var(--banana);
+    color:var(--ink);
+    font-family:'JetBrains Mono', monospace;
+    font-weight:500;
+    font-size:13px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    transition:background .15s ease, transform .1s ease;
+  }
+  .shutter:hover:not(:disabled){ background:var(--banana-deep); }
+  .shutter:active:not(:disabled){ transform:scale(0.994); }
+  .shutter:disabled{ opacity:0.55; cursor:not-allowed; }
+
+  .aperture{
+    width:14px; height:14px;
+    border-radius:50%;
+    border:2px solid var(--ink);
+    border-top-color:transparent;
+    animation:spin .8s linear infinite;
+    display:none;
+  }
+  .shutter.loading .aperture{ display:inline-block; }
+  .shutter.loading .shutter-label{ opacity:0.85; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .stage{
+    margin-top:8px;
+  }
+  .frame{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:20px;
+    text-align:center;
+  }
+  .frame.empty{
+    padding:56px 20px;
+    color:var(--paper-dim);
+    font-size:13px;
+  }
+  .frame.empty .peel{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:20px;
+    color:var(--peel);
+    display:block;
+    margin-bottom:8px;
+  }
+  .polaroid{
+    background:var(--paper);
+    padding:14px 14px 54px;
+    border-radius:2px;
+    display:inline-block;
+    max-width:100%;
+    box-shadow:0 18px 40px rgba(0,0,0,0.45);
+  }
+  .polaroid img{
+    display:block;
+    max-width:100%;
+    height:auto;
+    border-radius:1px;
+    background:#111;
+  }
+  .caption{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--ink);
+    opacity:0.55;
+    margin-top:10px;
+    text-align:left;
+    padding:0 2px;
+  }
+
+  .actions-row{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    margin-top:18px;
+    flex-wrap:wrap;
+  }
+  .ghost-btn{
+    appearance:none;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--paper);
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding:10px 16px;
+    border-radius:3px;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+  }
+  .ghost-btn:hover{ border-color:var(--banana); color:var(--banana); }
+
+  .error-box{
+    background:rgba(226,105,75,0.1);
+    border:1px solid rgba(226,105,75,0.4);
+    color:#f0a692;
+    padding:14px 16px;
+    border-radius:3px;
+    font-size:13px;
+    line-height:1.55;
+    margin-top:16px;
+    display:none;
+  }
+  .error-box.show{ display:block; }
+  .error-box strong{ color:#f5c1b0; }
+
+  details.raw{
+    margin-top:10px;
+  }
+  details.raw summary{
+    cursor:pointer;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--paper-dim);
+  }
+  details.raw pre{
+    white-space:pre-wrap;
+    word-break:break-word;
+    font-size:11px;
+    color:var(--paper-dim);
+    max-height:220px;
+    overflow:auto;
+    margin-top:8px;
+  }
+
+  footer{
+    margin-top:30px;
+    font-size:12px;
+    color:var(--paper-dim);
+    line-height:1.6;
+    text-align:center;
+  }
+
+  /* ---- Splash screen ---- */
+  #splash{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:26px;
+    background:#0d0906;
+    background-image:radial-gradient(circle at 50% 35%, rgba(255,122,26,0.10), transparent 55%);
+    transition:opacity .5s ease;
+  }
+  #splash.hidden{
+    opacity:0;
+    pointer-events:none;
+  }
+  #splash h2{
+    font-family:'Fraunces', serif;
+    font-weight:650;
+    font-style:italic;
+    font-size:clamp(30px, 6vw, 46px);
+    color:#fdecd3;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  #splash .splash-sub{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:#c98b4a;
+    margin-top:-14px;
+  }
+  #splash .splash-desc{
+    max-width:44ch;
+    text-align:center;
+    color:#dcb589;
+    font-size:14px;
+    line-height:1.6;
+    margin:-8px 0 0;
+    padding:0 20px;
+  }
+  .trail-dot{
+    position:fixed;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:radial-gradient(circle, #ffb35c 0%, #ff7a1a 60%, transparent 100%);
+    pointer-events:none;
+    z-index:150;
+    opacity:0.85;
+    transform:translate(-50%, -50%) scale(1);
+    transition:transform .6s ease, opacity .6s ease;
+    mix-blend-mode:screen;
+  }
+  .trail-dot.fade{
+    opacity:0;
+    transform:translate(-50%, -50%) scale(0.2);
+  }
+  .pumpkin-stage{
+    width:150px;
+    height:150px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+  .pumpkin-stage .glyph{
+    font-size:100px;
+    line-height:1;
+    clip-path:inset(100% 0 0 0);
+    transition:clip-path .55s cubic-bezier(.2,.8,.3,1);
+    filter:drop-shadow(0 8px 24px rgba(255,122,26,0.25));
+  }
+  .pumpkin-stage .glyph.s1{ clip-path:inset(64% 0 0 0); }
+  .pumpkin-stage .glyph.s2{ clip-path:inset(30% 0 0 0); }
+  .pumpkin-stage .glyph.s3{ clip-path:inset(0% 0 0 0); }
+
+  #openBtn{
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    padding:15px 30px;
+    border-radius:3px;
+    background:#ff7a1a;
+    color:#1c1108;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    transition:background .15s ease, transform .1s ease, opacity .3s ease;
+  }
+  #openBtn:hover:not(:disabled){ background:#e2600a; }
+  #openBtn:active:not(:disabled){ transform:scale(0.98); }
+  #openBtn:disabled{ opacity:0.5; cursor:default; }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-sub">A small render tool</div>
+  <h2>Pumpkin Arter</h2>
+  <p class="splash-desc">Create stunning thumbnails with AI. Upload your main render and reference images, then describe the result you want. Pumpkin Arter can match styles, blend references, improve lighting and composition, and generate professional high-CTR thumbnails tailored to your vision.</p>
+  <div class="pumpkin-stage">
+    <span class="glyph" id="pumpkinGlyph">🎃</span>
+  </div>
+  <button id="openBtn" type="button">Press to open AI</button>
+</div>
+
+<div class="wrap" id="appWrap">
+
+  <h1>Pumpkin <em>Arter</em></h1>
+  <p class="sub">A desk for OpenAI's image model. Attach nothing for a plain text-to-image render, or attach references and just describe what to do with them — combine them, copy a style, turn them into a thumbnail. Your API key stays in this tab only.</p>
+
+  <div class="panel">
+    <div class="field">
+      <label for="apiKey">OpenAI API key</label>
+      <input type="password" id="apiKey" placeholder="sk-…" autocomplete="off" />
+      <div class="hint">Used only for this session, held in page memory. Get a key at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>. GPT Image models may require organization verification on your OpenAI account first.</div>
+    </div>
+
+    <div class="field">
+      <label for="styleImage">Style photo <span class="count-badge" id="styleBadge">optional</span></label>
+      <div class="dropzone" id="styleDropzone">
+        <input type="file" id="styleFileInput" accept="image/*" hidden />
+        <span class="peel-small">◐</span>
+        <span>Drop one photo here, or <button type="button" class="link-btn" id="styleBrowseBtn">browse files</button></span>
+        <span class="dz-hint">Its look — palette, lighting, texture — gets carried over into the render. Swap it any time by dropping a new one.</span>
+      </div>
+      <div class="ref-grid" id="styleGrid"></div>
+    </div>
+
+    <div class="field">
+      <label for="refImages">Reference images <span class="count-badge" id="countBadge">0 attached</span></label>
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept="image/*" multiple hidden />
+        <span class="peel-small">◐</span>
+        <span>Drop images here, or <button type="button" class="link-btn" id="browseBtn">browse files</button></span>
+        <span class="dz-hint">Up to 16 images — OpenAI's limit per edit request. Leave empty to generate from text alone.</span>
+      </div>
+      <div class="ref-grid" id="refGrid"></div>
+    </div>
+
+    <div class="field">
+      <label for="prompt">Prompt</label>
+      <textarea id="prompt" placeholder="Combine all the attached renders, copy their lighting and color style, and lay them out as a single YouTube thumbnail with bold focal point."></textarea>
+      <div class="hint">Images are sent to the model in the numbered order shown below — just describe what you want done with them (combine, restyle, extract a look, turn into a thumbnail, etc.). No reference images attached means a straight text-to-image render. If a style photo is attached, its look is applied automatically — no need to describe it.</div>
+    </div>
+
+    <div class="row field">
+      <div>
+        <label for="model">Model</label>
+        <select id="model">
+          <option value="gpt-image-1.5">gpt-image-1.5</option>
+          <option value="gpt-image-2">gpt-image-2</option>
+          <option value="gpt-image-1">gpt-image-1</option>
+          <option value="gpt-image-1-mini">gpt-image-1-mini</option>
+        </select>
+      </div>
+      <div>
+        <label for="size">Aspect ratio</label>
+        <select id="size">
+          <option value="auto">Auto (let the model choose)</option>
+          <optgroup label="YouTube">
+            <option value="1536x1024">Thumbnail — 16:9</option>
+            <option value="1536x1024">Channel banner — 16:9</option>
+            <option value="1024x1536">Shorts — 9:16</option>
+          </optgroup>
+          <optgroup label="Social">
+            <option value="1024x1024">Post — 1:1 square</option>
+            <option value="1024x1536">Story / Reel — 9:16</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+    <div class="hint" style="margin-top:-14px; margin-bottom:20px;">GPT Image only renders three real shapes (1:1, 3:2 landscape, 2:3 portrait) — presets above snap to the closest one. Ultra-wide banners will need a manual crop afterward.</div>
+
+    <div class="field">
+      <button class="shutter" id="generateBtn">
+        <span class="aperture"></span>
+        <span class="shutter-label">Generate image</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="frame empty" id="frame">
+      <span class="peel">◐</span>
+      Nothing rendered yet — write a prompt (and attach references if you want) and press generate.
+    </div>
+    <div class="error-box" id="errorBox"></div>
+  </div>
+
+  <footer>Calls api.openai.com directly from your browser using your key — no images attached uses /v1/images/generations, one or more attached uses /v1/images/edits with all of them plus your prompt. Heads up: OpenAI's API does not reliably support direct browser calls (no CORS headers), so this may fail with a network error even with a valid key — if so, you'd need a small backend relay to forward the request server-side.</footer>
+</div>
+
+<script>
+(function(){
+  const openBtn = document.getElementById('openBtn');
+  const splash = document.getElementById('splash');
+  const glyph = document.getElementById('pumpkinGlyph');
+  const appWrap = document.getElementById('appWrap');
+
+  // Orange cursor trail while the splash screen is up
+  let lastTrailTime = 0;
+  splash.addEventListener('mousemove', (e) => {
+    const now = Date.now();
+    if (now - lastTrailTime < 25) return; // throttle so it doesn't flood the DOM
+    lastTrailTime = now;
+
+    const dot = document.createElement('div');
+    dot.className = 'trail-dot';
+    dot.style.left = e.clientX + 'px';
+    dot.style.top = e.clientY + 'px';
+    const size = 5 + Math.random() * 6;
+    dot.style.width = size + 'px';
+    dot.style.height = size + 'px';
+    splash.appendChild(dot);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => dot.classList.add('fade'));
+    });
+    setTimeout(() => dot.remove(), 650);
+  });
+
+  openBtn.addEventListener('click', () => {
+    openBtn.disabled = true;
+    openBtn.textContent = 'Loading…';
+
+    // Build the pumpkin in three stages: bottom, then middle, then the rest.
+    setTimeout(() => glyph.classList.add('s1'), 80);
+    setTimeout(() => glyph.classList.add('s2'), 700);
+    setTimeout(() => glyph.classList.add('s3'), 1300);
+
+    setTimeout(() => {
+      splash.classList.add('hidden');
+      appWrap.classList.add('revealed');
+      setTimeout(() => { splash.style.display = 'none'; }, 550);
+    }, 1950);
+  });
+})();
+
+const generateBtn = document.getElementById('generateBtn');
+const promptEl = document.getElementById('prompt');
+const apiKeyEl = document.getElementById('apiKey');
+const modelEl = document.getElementById('model');
+const frame = document.getElementById('frame');
+const errorBox = document.getElementById('errorBox');
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const browseBtn = document.getElementById('browseBtn');
+const refGrid = document.getElementById('refGrid');
+const countBadge = document.getElementById('countBadge');
+
+// Ordered list of attached reference images: { id, name, mimeType, base64, dataUrl }
+let refImages = [];
+let refIdCounter = 0;
+
+function fileToBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result; // data:<mime>;base64,<data>
+      const base64 = result.split(',')[1];
+      resolve({ base64, dataUrl: result });
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function addFiles(fileList){
+  const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+  for (const file of files){
+    try{
+      const { base64, dataUrl } = await fileToBase64(file);
+      refImages.push({
+        id: 'ref-' + (refIdCounter++),
+        name: file.name,
+        mimeType: file.type || 'image/png',
+        base64,
+        dataUrl
+      });
+    }catch(e){
+      // skip files that fail to read
+    }
+  }
+  renderRefGrid();
+}
+
+function renderRefGrid(){
+  countBadge.textContent = refImages.length + (refImages.length === 1 ? ' attached' : ' attached');
+  refGrid.innerHTML = refImages.map((img, i) => (
+    '<div class="ref-thumb" data-id="' + img.id + '">' +
+      '<img src="' + img.dataUrl + '" alt="' + escapeHtml(img.name) + '" />' +
+      '<span class="idx">' + (i + 1) + '</span>' +
+      '<button type="button" class="remove" data-id="' + img.id + '" aria-label="Remove image">×</button>' +
+    '</div>'
+  )).join('');
+
+  refGrid.querySelectorAll('.remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      refImages = refImages.filter(img => img.id !== btn.dataset.id);
+      renderRefGrid();
+    });
+  });
+}
+
+browseBtn.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('click', (e) => {
+  if (e.target === browseBtn) return;
+  fileInput.click();
+});
+fileInput.addEventListener('change', (e) => {
+  addFiles(e.target.files);
+  fileInput.value = '';
+});
+
+['dragenter', 'dragover'].forEach(evt => {
+  dropzone.addEventListener(evt, (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropzone.classList.add('drag-over');
+  });
+});
+['dragleave', 'drop'].forEach(evt => {
+  dropzone.addEventListener(evt, (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropzone.classList.remove('drag-over');
+  });
+});
+dropzone.addEventListener('drop', (e) => {
+  if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files);
+});
+
+// --- Style photo (single image, replaces itself when a new one is dropped) ---
+const styleDropzone = document.getElementById('styleDropzone');
+const styleFileInput = document.getElementById('styleFileInput');
+const styleBrowseBtn = document.getElementById('styleBrowseBtn');
+const styleGrid = document.getElementById('styleGrid');
+const styleBadge = document.getElementById('styleBadge');
+
+let styleImage = null; // { name, mimeType, base64, dataUrl }
+
+async function setStyleFile(file){
+  if (!file || !file.type.startsWith('image/')) return;
+  try{
+    const { base64, dataUrl } = await fileToBase64(file);
+    styleImage = { name: file.name, mimeType: file.type || 'image/png', base64, dataUrl };
+  }catch(e){
+    // ignore unreadable file
+  }
+  renderStyleGrid();
+}
+
+function renderStyleGrid(){
+  if (!styleImage){
+    styleBadge.textContent = 'optional';
+    styleGrid.innerHTML = '';
+    return;
+  }
+  styleBadge.textContent = 'attached';
+  styleGrid.innerHTML =
+    '<div class="ref-thumb">' +
+      '<img src="' + styleImage.dataUrl + '" alt="' + escapeHtml(styleImage.name) + '" />' +
+      '<span class="idx">S</span>' +
+      '<button type="button" class="remove" id="removeStyleBtn" aria-label="Remove style photo">×</button>' +
+    '</div>';
+  document.getElementById('removeStyleBtn').addEventListener('click', () => {
+    styleImage = null;
+    renderStyleGrid();
+  });
+}
+
+styleBrowseBtn.addEventListener('click', () => styleFileInput.click());
+styleDropzone.addEventListener('click', (e) => {
+  if (e.target === styleBrowseBtn) return;
+  styleFileInput.click();
+});
+styleFileInput.addEventListener('change', (e) => {
+  if (e.target.files && e.target.files[0]) setStyleFile(e.target.files[0]);
+  styleFileInput.value = '';
+});
+
+['dragenter', 'dragover'].forEach(evt => {
+  styleDropzone.addEventListener(evt, (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    styleDropzone.classList.add('drag-over');
+  });
+});
+['dragleave', 'drop'].forEach(evt => {
+  styleDropzone.addEventListener(evt, (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    styleDropzone.classList.remove('drag-over');
+  });
+});
+styleDropzone.addEventListener('drop', (e) => {
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) setStyleFile(e.dataTransfer.files[0]);
+});
+
+function setLoading(isLoading){
+  generateBtn.disabled = isLoading;
+  generateBtn.classList.toggle('loading', isLoading);
+  generateBtn.querySelector('.shutter-label').textContent = isLoading ? 'Developing…' : 'Generate image';
+}
+
+function showError(msg, detailObj){
+  errorBox.innerHTML = '<strong>Couldn\'t generate that.</strong> ' + msg +
+    (detailObj ? '<details class="raw"><summary>Raw response</summary><pre>' + escapeHtml(JSON.stringify(detailObj, null, 2)) + '</pre></details>' : '');
+  errorBox.classList.add('show');
+}
+
+function clearError(){
+  errorBox.classList.remove('show');
+  errorBox.innerHTML = '';
+}
+
+function escapeHtml(str){
+  return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+
+function dataURLtoBlob(dataUrl){
+  const [header, base64] = dataUrl.split(',');
+  const mime = header.match(/data:(.*?);base64/)[1];
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+}
+
+// Tells the model, in plain text, exactly which attached image is which —
+// GPT Image only sees pixels + one prompt string, so the role of each image
+// (content reference vs. style reference) has to be spelled out here.
+function buildFinalPrompt(prompt){
+  const notes = [];
+
+  if (refImages.length > 0){
+    const label = refImages.length === 1 ? 'image 1 is a reference image' :
+      'images 1–' + refImages.length + ' are reference images';
+    notes.push('The ' + label + ' — use them as the content/subject to work from, in the order attached.');
+  }
+
+  if (styleImage){
+    notes.push('The final attached image is a separate style photo, not content — copy its palette, lighting, and texture onto the result, but don\'t reuse its subject matter unless asked to.');
+  }
+
+  return notes.length ? prompt + '\n\n' + notes.join(' ') : prompt;
+}
+
+async function generate(){
+  clearError();
+  const key = apiKeyEl.value.trim();
+  const prompt = promptEl.value.trim();
+  const model = modelEl.value;
+  const size = document.getElementById('size').value;
+  const totalImages = refImages.length + (styleImage ? 1 : 0);
+
+  if (!key){ showError('Add your OpenAI API key first.'); return; }
+  if (!prompt){ showError('Write a prompt first.'); return; }
+  if (totalImages > 16){ showError('OpenAI allows at most 16 images per edit request — remove a few.'); return; }
+
+  setLoading(true);
+
+  try{
+    let res;
+
+    if (totalImages === 0){
+      // Plain text-to-image
+      res = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + key,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ model, prompt, size })
+      });
+    } else {
+      // Combine/edit using all attached reference images, plus the style photo if set.
+      // Images are appended in this exact order — refs first, style photo last —
+      // matching the order described in buildFinalPrompt().
+      const form = new FormData();
+      form.append('model', model);
+      form.append('prompt', buildFinalPrompt(prompt));
+      form.append('size', size);
+      refImages.forEach((img) => {
+        form.append('image[]', dataURLtoBlob(img.dataUrl), img.name || 'image.png');
+      });
+      if (styleImage){
+        form.append('image[]', dataURLtoBlob(styleImage.dataUrl), styleImage.name || 'style.png');
+      }
+
+      res = await fetch('https://api.openai.com/v1/images/edits', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + key },
+        body: form
+      });
+    }
+
+    const raw = await res.json();
+
+    if (!res.ok){
+      const msg = (raw && raw.error && raw.error.message) ? raw.error.message : ('Request failed with status ' + res.status + '.');
+      showError(msg, raw);
+      setLoading(false);
+      return;
+    }
+
+    const imageB64 = raw && raw.data && raw.data[0] && raw.data[0].b64_json;
+
+    if (!imageB64){
+      showError('The response came back without an image payload — the API shape may have changed.', raw);
+      setLoading(false);
+      return;
+    }
+
+    const imageTokens = raw && raw.usage && raw.usage.input_tokens_details && raw.usage.input_tokens_details.image_tokens;
+    const imagesSentCount = totalImages;
+    const readNote = imagesSentCount > 0
+      ? (imageTokens
+          ? '<div class="hint" style="margin-top:10px;text-align:left;">Sent ' + imagesSentCount + ' image' + (imagesSentCount === 1 ? '' : 's') + ' · model processed ' + imageTokens + ' image tokens from them, confirming it read the input.</div>'
+          : '<div class="hint" style="margin-top:10px;text-align:left;">Sent ' + imagesSentCount + ' image' + (imagesSentCount === 1 ? '' : 's') + ' along with the prompt.</div>')
+      : '';
+
+    frame.innerHTML =
+      '<div class="polaroid">' +
+        '<img src="data:image/png;base64,' + imageB64 + '" alt="Generated image" />' +
+        '<div class="caption">' + escapeHtml(prompt.slice(0, 90)) + (prompt.length > 90 ? '…' : '') + '</div>' +
+      '</div>' +
+      readNote +
+      '<div class="actions-row">' +
+        '<a class="ghost-btn" id="downloadLink" download="pumpkin-arter.png">Download PNG</a>' +
+        '<button class="ghost-btn" id="regenBtn" type="button">Generate again</button>' +
+      '</div>';
+    frame.classList.remove('empty');
+
+    document.getElementById('downloadLink').href = 'data:image/png;base64,' + imageB64;
+    document.getElementById('regenBtn').addEventListener('click', generate);
+
+  }catch(err){
+    showError('Network or CORS error reaching the OpenAI API: ' + err.message);
+  }finally{
+    setLoading(false);
+  }
+}
+
+generateBtn.addEventListener('click', generate);
+promptEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate();
+});
+</script>
+</body>
+</html>
